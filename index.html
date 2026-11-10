@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1e2a5a">
+<title>מרכז בקרה משפחתי</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#0f1730;--card:#1b2547;--card2:#232f5c;--txt:#f2f4ff;--dim:#9aa5d0;--acc:#ffd166;--ok:#4ade80;--bad:#f87171;--blue:#6aa9ff;}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:76px}
+header{background:linear-gradient(135deg,#1e2a5a,#3b2f6e);padding:18px 16px 14px;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.35)}
+header h1{font-size:20px;font-weight:800}
+header .sub{color:var(--dim);font-size:12px;margin-top:2px}
+.wrap{padding:14px;max-width:560px;margin:0 auto}
+.card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.row{display:flex;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.grow{flex:1}
+.name{font-size:17px;font-weight:800}
+.dim{color:var(--dim);font-size:12.5px}
+.bar{height:9px;background:#0d1330;border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.bar>i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .4s}
+.bar.over>i{background:var(--bad)}
+.chip{display:inline-block;background:var(--card2);border-radius:99px;padding:3px 10px;font-size:12px;font-weight:700;color:var(--acc)}
+.live{display:inline-flex;align-items:center;gap:5px;color:var(--ok);font-size:12.5px;font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:p 1.2s infinite}
+@keyframes p{50%{opacity:.3}}
+button{font-family:inherit;cursor:pointer;border:none}
+.btn{background:var(--card2);color:var(--txt);border-radius:12px;padding:9px 14px;font-size:14px;font-weight:700}
+.btn.acc{background:var(--acc);color:#222}
+.btn.bad{background:#4a1f2a;color:var(--bad)}
+.btn.big{width:100%;padding:16px;font-size:18px;border-radius:16px;font-weight:800}
+.btn.pause{background:linear-gradient(135deg,#e5484d,#b3353f);color:#fff}
+.btn.resume{background:linear-gradient(135deg,#22a35a,#187a43);color:#fff}
+.minibtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.minibtns .btn{padding:6px 10px;font-size:13px}
+.appitem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #2a3560}
+.appitem:last-child{border-bottom:none}
+.emoji{font-size:26px}
+.sw{position:relative;width:46px;height:26px;background:#39406b;border-radius:99px;transition:.2s;flex-shrink:0}
+.sw.on{background:var(--ok)}
+.sw::after{content:'';position:absolute;top:3px;inset-inline-start:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on::after{transform:translateX(-20px)}
+input,select{background:#0d1330;color:var(--txt);border:1px solid #39406b;border-radius:10px;padding:9px 10px;font-size:15px;font-family:inherit;width:100%}
+input[type=time]{direction:ltr;text-align:center}
+label{font-size:13px;color:var(--dim);display:block;margin:10px 0 4px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#141c3d;display:flex;border-top:1px solid #2a3560;z-index:60}
+nav button{flex:1;background:none;color:var(--dim);padding:10px 4px 12px;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button.on{color:var(--acc)}
+nav button span{font-size:19px}
+.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--ok);color:#06270f;font-weight:800;padding:10px 18px;border-radius:99px;z-index:200;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:7px 6px;text-align:center;border-bottom:1px solid #2a3560}
+th{color:var(--dim);font-size:12px}
+#lock{position:fixed;inset:0;background:linear-gradient(160deg,#0f1730,#241d4d);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;padding:24px}
+#lock h2{font-size:22px;margin:14px 0 4px}
+#pinDisp{display:flex;gap:12px;margin:20px 0}
+#pinDisp i{width:15px;height:15px;border-radius:50%;border:2px solid var(--dim);display:block}
+#pinDisp i.f{background:var(--acc);border-color:var(--acc)}
+.pad{display:grid;grid-template-columns:repeat(3,72px);gap:12px}
+.pad button{height:60px;border-radius:16px;background:var(--card);color:var(--txt);font-size:23px;font-weight:800}
+.pad button:active{background:var(--card2)}
+h3.sec{font-size:15px;color:var(--dim);margin:16px 2px 8px;font-weight:800}
+a{color:var(--blue);text-decoration:none}
+.openbtn{font-size:12.5px;color:var(--blue);font-weight:700;background:none;border:1px solid #39406b;border-radius:99px;padding:4px 12px}
+</style>
+</head>
+<body>
+<header><h1>🎛️ מרכז בקרה משפחתי</h1><div class="sub" id="hdrSub">טוען...</div></header>
+<div class="wrap">
+
+<section id="v-main">
+  <div class="card">
+    <button class="btn big pause" id="pauseBtn">⏸️ הפסקת הכל עכשיו</button>
+    <div class="dim" style="margin-top:8px;text-align:center" id="pauseState"></div>
+  </div>
+  <h3 class="sec">הילדים היום</h3>
+  <div id="kidsCards"></div>
+</section>
+
+<section id="v-apps" style="display:none">
+  <h3 class="sec">אפליקציות מנוהלות (הפעלה/השבתה)</h3>
+  <div class="card" id="managedApps"></div>
+  <h3 class="sec">כל האפליקציות והמשחקים</h3>
+  <div class="card" id="allApps"></div>
+</section>
+
+<section id="v-stats" style="display:none">
+  <h3 class="sec">דקות משחק - 7 ימים אחרונים</h3>
+  <div class="card" id="weekStats">טוען...</div>
+  <h3 class="sec">היום - לפי אפליקציה</h3>
+  <div class="card" id="appStats">טוען...</div>
+</section>
+
+<section id="v-set" style="display:none">
+  <div class="card">
+    <div class="name">חלון זמן מותר</div>
+    <div class="row" style="margin-top:8px">
+      <div class="grow"><label>מ-</label><input type="time" id="winStart"></div>
+      <div class="grow"><label>עד</label><input type="time" id="winEnd"></div>
+    </div>
+    <label>מגבלה יומית רגילה (דקות)</label>
+    <input type="number" id="defMin" min="0" max="600">
+    <div style="margin-top:12px"><button class="btn acc" id="saveWin">שמירה</button></div>
+  </div>
+  <div class="card">
+    <div class="name">קוד כניסה (PIN)</div>
+    <label>קוד חדש (4 ספרות)</label>
+    <input type="tel" id="newPin" maxlength="4" inputmode="numeric" style="direction:ltr;text-align:center">
+    <div style="margin-top:12px"><button class="btn acc" id="savePin">שינוי קוד</button></div>
+  </div>
+  <div class="card">
+    <div class="name">מגבלה אישית לכל ילד (דקות)</div>
+    <div class="dim" style="margin-top:4px">ריק = המגבלה הרגילה</div>
+    <div id="kidLimits"></div>
+    <div style="margin-top:12px"><button class="btn acc" id="saveLimits">שמירה</button></div>
+  </div>
+</section>
+
+</div>
+<nav>
+  <button class="on" data-v="v-main"><span>🏠</span>ראשי</button>
+  <button data-v="v-apps"><span>🎮</span>אפליקציות</button>
+  <button data-v="v-stats"><span>📊</span>סטטיסטיקה</button>
+  <button data-v="v-set"><span>⚙️</span>הגדרות</button>
+</nav>
+
+<div id="lock">
+  <div style="font-size:56px">🔒</div>
+  <h2>מרכז בקרה משפחתי</h2>
+  <div class="dim">הזינו קוד הורים</div>
+  <div id="pinDisp"><i></i><i></i><i></i><i></i></div>
+  <div class="pad" id="pad"></div>
+</div>
+
+<script>
+'use strict';
+var API='https://kvdb.io/NxA2jTKKEfbo8mJpDN6gkU';
+var cfg=null,kidsToday={},liveMap={},bonusMap={};
+function enc(p){return p.split('/').map(encodeURIComponent).join('/');}
+function get(k){return fetch(API+'/'+enc(k),{cache:'no-store'}).then(function(r){return r.ok?r.text():'';}).catch(function(){return '';});}
+function set(k,v){return fetch(API+'/'+enc(k),{method:'POST',body:String(v)}).then(function(r){return r.ok;}).catch(function(){return false;});}
+function incr(k,d){return fetch(API+'/'+enc(k),{method:'PATCH',body:(d>=0?'+':'')+d}).then(function(r){if(!r.ok)return set(k,d);}).catch(function(){});}
+function list(p){return fetch(API+'/?prefix='+encodeURIComponent(p),{cache:'no-store'}).then(function(r){return r.ok?r.text():'';}).then(function(t){return t?t.split('\n').filter(Boolean):[];}).catch(function(){return [];});}
+function dayKey(d){d=d||new Date();return d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);}
+function toast(t){var e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(function(){e.remove();},2200);}
+function saveCfg(){return set('cfg',JSON.stringify(cfg)).then(function(ok){toast(ok?'נשמר ✓':'שגיאה בשמירה');render();});}
+function allowMin(k){var m=cfg.defaultMin||30;if(cfg.overrides&&cfg.overrides[k])m=cfg.overrides[k];return m;}
+function allowSec(k){return allowMin(k)*60+(bonusMap[k]||0);}
+
+function loadAll(){
+  return get('cfg').then(function(t){
+    if(t){try{cfg=JSON.parse(t);}catch(e){}}
+    if(!cfg){document.getElementById('hdrSub').textContent='שגיאה בטעינת הנתונים - בדקו חיבור';return;}
+    var d=dayKey(),jobs=[];
+    cfg.kids.forEach(function(k){
+      jobs.push(get('u/'+d+'/'+k).then(function(v){kidsToday[k]=parseInt(v,10)||0;}));
+      jobs.push(get('b/'+d+'/'+k).then(function(v){bonusMap[k]=parseInt(v,10)||0;}));
+      jobs.push(get('live/'+k).then(function(v){try{liveMap[k]=JSON.parse(v);}catch(e){liveMap[k]=null;}}));
+    });
+    return Promise.all(jobs).then(render);
+  });
+}
+function appName(id){for(var i=0;i<cfg.apps.length;i++)if(cfg.apps[i].id===id)return cfg.apps[i].name;return id;}
+function appEmoji(id){for(var i=0;i<cfg.apps.length;i++)if(cfg.apps[i].id===id)return cfg.apps[i].emoji||'🎮';return '🎮';}
+
+function render(){
+  if(!cfg)return;
+  document.getElementById('hdrSub').textContent='חלון משחק: '+cfg.windowStart+' - '+cfg.windowEnd+' • מגבלה: '+cfg.defaultMin+' דקות';
+  var paused=cfg.pauseUntil&&Date.now()<cfg.pauseUntil;
+  var pb=document.getElementById('pauseBtn');
+  pb.className='btn big '+(paused?'resume':'pause');
+  pb.textContent=paused?'▶️ חזרה לפעילות':'⏸️ הפסקת הכל עכשיו';
+  document.getElementById('pauseState').textContent=paused?'מושהה כרגע - כל האפליקציות חסומות':'';
+  var kc=document.getElementById('kidsCards');kc.innerHTML='';
+  cfg.kids.forEach(function(k){
+    var used=kidsToday[k]||0,allow=allowSec(k),min=Math.floor(used/60),am=allowMin(k);
+    var lv=liveMap[k],isLive=lv&&(Date.now()-lv.ts<120000);
+    var pct=allow>0?Math.min(100,Math.round(used/allow*100)):(used>0?100:0);
+    var c=document.createElement('div');c.className='card';
+    c.innerHTML='<div class="row between"><div class="row"><div class="name">'+k+'</div>'+
+      (isLive?'<span class="live"><span class="dot"></span>משחק/ת עכשיו '+appEmoji(lv.app)+' '+appName(lv.app)+'</span>':'')+
+      '</div><span class="chip">'+min+' / '+am+' דקות</span></div>'+
+      '<div class="bar'+(used>=allow?' over':'')+'"><i style="width:'+pct+'%"></i></div>'+
+      '<div class="dim">'+(bonusMap[k]?(bonusMap[k]>0?'בונוס היום: +':'קיזוז היום: ')+Math.round(bonusMap[k]/60)+' דקות':'')+'</div>'+
+      '<div class="minibtns">'+
+      '<button class="btn" data-k="'+k+'" data-b="300">+5 בונוס</button>'+
+      '<button class="btn" data-k="'+k+'" data-b="600">+10 בונוס</button>'+
+      '<button class="btn bad" data-k="'+k+'" data-b="-300">-5 קיזוז</button>'+
+      '<button class="btn bad" data-k="'+k+'" data-b="-600">-10 קיזוז</button></div>';
+    kc.appendChild(c);
+  });
+  kc.querySelectorAll('button[data-b]').forEach(function(b){
+    b.onclick=function(){
+      incr('b/'+dayKey()+'/'+b.getAttribute('data-k'),+b.getAttribute('data-b')).then(function(){
+        toast('עודכן ✓');loadAll();
+      });
+    };
+  });
+  var ma=document.getElementById('managedApps');ma.innerHTML='';
+  var aa=document.getElementById('allApps');aa.innerHTML='';
+  cfg.apps.forEach(function(a){
+    if(a.managed){
+      var d=document.createElement('div');d.className='appitem';
+      d.innerHTML='<span class="emoji">'+a.emoji+'</span><div class="grow"><div style="font-weight:700">'+a.name+'</div><div class="dim">'+(a.enabled!==false?'פעיל':'מושבת')+'</div></div>';
+      var sw=document.createElement('button');sw.className='sw'+(a.enabled!==false?' on':'');sw.setAttribute('aria-label','toggle');
+      sw.onclick=function(){a.enabled=!(a.enabled!==false);saveCfg();};
+      d.appendChild(sw);ma.appendChild(d);
+    }
+    var l=document.createElement('div');l.className='appitem';
+    l.innerHTML='<span class="emoji">'+a.emoji+'</span><div class="grow"><div style="font-weight:700">'+a.name+'</div>'+(a.managed?'<div class="dim">מנוהלת עם מגבלות</div>':'<div class="dim">פתיחה חופשית</div>')+'</div>';
+    var o=document.createElement('a');o.className='openbtn';o.href=a.url;o.target='_blank';o.rel='noopener';o.textContent='פתיחה';
+    l.appendChild(o);aa.appendChild(l);
+  });
+  document.getElementById('winStart').value=cfg.windowStart||'13:00';
+  document.getElementById('winEnd').value=cfg.windowEnd||'20:30';
+  document.getElementById('defMin').value=cfg.defaultMin||30;
+  var kl=document.getElementById('kidLimits');kl.innerHTML='';
+  cfg.kids.forEach(function(k){
+    var w=document.createElement('div');w.className='row';w.style.marginTop='8px';
+    w.innerHTML='<div style="width:80px;font-weight:700">'+k+'</div><div class="grow"><input type="number" min="0" max="600" data-k="'+k+'" value="'+(cfg.overrides&&cfg.overrides[k]?cfg.overrides[k]:'')+'" placeholder="'+(cfg.defaultMin||30)+'"></div>';
+    kl.appendChild(w);
+  });
+}
+
+function renderStats(){
+  if(!cfg)return;
+  var days=[],i,d;
+  for(i=6;i>=0;i--){d=new Date();d.setDate(d.getDate()-i);days.push(d);}
+  var dayNames=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+  var jobs={},keys=[];
+  days.forEach(function(d){var dk=dayKey(d);cfg.kids.forEach(function(k){var key=dk+'|'+k;keys.push(key);jobs[key]=get('u/'+dk+'/'+k).then(function(v){return parseInt(v,10)||0;});});});
+  var all=keys.map(function(k){return jobs[k];});
+  Promise.all(all).then(function(vals){
+    var M={};keys.forEach(function(k,ix){M[k]=vals[ix];});
+    var h='<table><tr><th>יום</th>';cfg.kids.forEach(function(k){h+='<th>'+k+'</th>';});h+='</tr>';
+    days.forEach(function(d){
+      var dk=dayKey(d);h+='<tr><td>'+dayNames[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1)+'</td>';
+      cfg.kids.forEach(function(k){var m=Math.floor((M[dk+'|'+k]||0)/60);h+='<td'+(m>0?' style="color:var(--acc);font-weight:700"':'')+'>'+(m||'-')+'</td>';});
+      h+='</tr>';
+    });
+    document.getElementById('weekStats').innerHTML=h+'</table>';
+  });
+  var dk=dayKey();
+  list('ua/'+dk).then(function(keys){
+    if(!keys.length){document.getElementById('appStats').innerHTML='<div class="dim">עוד לא נרשם משחק היום</div>';return;}
+    var prefix='ua/'+dk+'/';
+    function sd(s){try{return decodeURIComponent(s);}catch(e){return s;}}
+    var jobs=keys.map(function(x){
+      var rest=x.indexOf(prefix)===0?x.slice(prefix.length):x;
+      var segs=rest.split('/').map(sd);
+      return get('ua/'+dk+'/'+segs.join('/')).then(function(v){return {path:segs.join('/'),sec:parseInt(v,10)||0};});
+    });
+    Promise.all(jobs).then(function(rows){
+      var h='<table><tr><th>ילד/ה</th><th>אפליקציה</th><th>דקות</th></tr>';
+      rows.sort(function(a,b){return b.sec-a.sec;});
+      rows.forEach(function(r){var p=r.path.split('/');h+='<tr><td>'+p[0]+'</td><td>'+appEmoji(p.slice(1).join('/'))+' '+appName(p.slice(1).join('/'))+'</td><td style="color:var(--acc);font-weight:700">'+Math.max(1,Math.round(r.sec/60))+'</td></tr>';});
+      document.getElementById('appStats').innerHTML=h+'</table>';
+    });
+  });
+}
+
+document.getElementById('pauseBtn').onclick=function(){
+  if(!cfg)return;
+  var paused=cfg.pauseUntil&&Date.now()<cfg.pauseUntil;
+  cfg.pauseUntil=paused?0:Date.now()+24*3600*1000;
+  saveCfg();
+};
+document.getElementById('saveWin').onclick=function(){
+  cfg.windowStart=document.getElementById('winStart').value||'13:00';
+  cfg.windowEnd=document.getElementById('winEnd').value||'20:30';
+  cfg.defaultMin=parseInt(document.getElementById('defMin').value,10)||30;
+  saveCfg();
+};
+document.getElementById('savePin').onclick=function(){
+  var p=document.getElementById('newPin').value;
+  if(!/^\d{4}$/.test(p)){toast('הקוד חייב להיות 4 ספרות');return;}
+  cfg.pin=p;saveCfg();
+};
+document.getElementById('saveLimits').onclick=function(){
+  cfg.overrides=cfg.overrides||{};
+  document.querySelectorAll('#kidLimits input').forEach(function(inp){
+    var k=inp.getAttribute('data-k');
+    if(inp.value===''){delete cfg.overrides[k];}else{cfg.overrides[k]=parseInt(inp.value,10)||0;}
+  });
+  saveCfg();
+};
+document.querySelectorAll('nav button').forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll('nav button').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on');
+    ['v-main','v-apps','v-stats','v-set'].forEach(function(v){document.getElementById(v).style.display='none';});
+    document.getElementById(b.getAttribute('data-v')).style.display='';
+    window.scrollTo(0,0);
+    if(b.getAttribute('data-v')==='v-stats')renderStats();
+  };
+});
+
+/* PIN lock */
+var pin='',LOCK=document.getElementById('lock');
+var pad=document.getElementById('pad');
+'123456789 0'.split('').forEach(function(ch){
+  if(ch===' '){pad.appendChild(document.createElement('span'));return;}
+  var b=document.createElement('button');b.textContent=ch;
+  b.onclick=function(){
+    if(pin.length>=4)return;pin+=ch;drawPin();
+    if(pin.length===4){
+      get('cfg').then(function(t){
+        var c=null;try{c=JSON.parse(t);}catch(e){}
+        var want=(c&&c.pin)||'2580';
+        if(pin===want){cfg=c;sessionStorage.setItem('hub_ok','1');LOCK.style.display='none';loadAll();setInterval(loadAll,30000);}
+        else{pin='';drawPin();document.getElementById('pinDisp').animate([{transform:'translateX(0)'},{transform:'translateX(8px)'},{transform:'translateX(-8px)'},{transform:'translateX(0)'}],{duration:250});}
+      });
+    }
+  };
+  pad.appendChild(b);
+});
+var clr=document.createElement('button');clr.textContent='⌫';clr.onclick=function(){pin=pin.slice(0,-1);drawPin();};pad.appendChild(clr);
+function drawPin(){var d=document.getElementById('pinDisp').children;for(var i=0;i<4;i++)d[i].className=i<pin.length?'f':'';}
+if(sessionStorage.getItem('hub_ok')==='1'){LOCK.style.display='none';loadAll().then(function(){if(!cfg){LOCK.style.display='';}else setInterval(loadAll,30000);});}
+window.addEventListener('pageshow',function(){if(cfg)loadAll();});
+</script>
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+</script>
+</body>
+</html>
