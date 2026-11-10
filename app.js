@@ -17,7 +17,7 @@ function icon(id){const paths={
 'tic-tac-toe':'M9 2v20M16 2v20M2 9h20M2 16h20M3 3l3 3M6 3 3 6M18 18l3 3M21 18l-3 3',
  'talatlim-adventure':'M5 21V9l7-7 7 7v12ZM9 21v-7h6v7M5 9h14M8 9V6M16 9V6'};return '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(paths[id]||paths.starfall)+'"/></svg>';}
 
-let data=null,parent=false,tab='apps',installPrompt=null,busy=false;const token=()=>localStorage.getItem('fc_device_v1');
+let pairing=null;let data=null,parent=false,tab='apps',installPrompt=null,busy=false;const token=()=>localStorage.getItem('fc_device_v1');
 function status(t=''){ $('#status').textContent=t; }
 async function rpc(name,args={}){const {data,error}=await db.rpc(name,args);if(error)throw Error(error.message);return data;}
 function dialog(html){$('#dialogBody').innerHTML=html;$('#dialog').showModal();}
@@ -28,7 +28,7 @@ window.addEventListener('pageshow',()=>window.scrollTo(0,0));history.scrollResto
 $('#emailForm').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;try{const {error}=await db.auth.signInWithOtp({email:$('#email').value.trim(),options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;status('קישור כניסה נשלח לאימייל. פותחים אותו באותו טלפון.');}catch(e){status('לא הצלחנו לשלוח קישור: '+e.message);}finally{b.disabled=false;}};
 async function start(){try{const p=new URLSearchParams(location.hash.slice(1));if(p.has('device')){const t=p.get('device');await rpc('fc_gate',{token:t});localStorage.setItem('fc_device_v1',t);if(p.get('parent')==='1')localStorage.setItem('fc_parent_v1',t);history.replaceState(null,'',location.pathname);}
  await load();}catch(e){status('החיבור לא הצליח. בדקו אינטרנט או בקשו מהורה לצרף מחדש את המכשיר.');}}
-async function load(){try{data=await rpc('fc_dashboard',{parent_token:localStorage.getItem('fc_parent_v1')});parent=true;if(!token()){localStorage.setItem('fc_device_v1',await rpc('fc_pair',{label:'המכשיר של ההורה',parent_device:false,parent_token:localStorage.getItem('fc_parent_v1')}));}}
+async function load(){try{data=await rpc('fc_dashboard',{parent_token:localStorage.getItem('fc_parent_v1')});parent=true;if(!token()){pairing??=rpc('fc_pair',{label:'המכשיר של ההורה',parent_device:false,parent_token:localStorage.getItem('fc_parent_v1')});localStorage.setItem('fc_device_v1',await pairing);pairing=null;}}
  catch(e){parent=false;if(token())data=await rpc('fc_gate',{token:token()});else{data=null;$('#login').hidden=false;$('#content').hidden=true;return;}}
  $('#login').hidden=true;$('#content').hidden=false;render();status();}
 function render(){const apps=data.apps||[],kids=data.kids||[];let html=`<div class="toolbar"><div class="tabs"><button data-tab="apps" class="${tab==='apps'?'active':''}">האפליקציות</button>${parent?`<button data-tab="parents" class="${tab==='parents'?'active':''}">אזור ההורים</button>`:''}</div>${parent?'<span class="badge">גישה להורים</span>':'<span class="badge">מכשיר משפחתי</span>'}</div>`;
