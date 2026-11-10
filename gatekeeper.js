@@ -42,7 +42,7 @@ async function tick(retried){if(inFlight||choosing)return;inFlight=true;try{toke
   refreshLease();
   if(r.reason==='limit'&&lease&&leaseLeft()>0&&!retried){limitReleased=true;await releaseLease();inFlight=false;return tick(true);}
   if((r.reason==='paused'||r.reason==='disabled'||r.reason==='window')&&lease){releaseLease();}
-  pill.style.display='none';block(m[0],r.reason==='window'?'זמן המשחק הוא בין '+r.start.slice(0,5)+' ל־'+r.end.slice(0,5)+' לפי שעון ישראל.':m[1]);}}catch(e){if(tryOffline())return;pill.style.display='none';block('בודקים את החיבור','כדי לשמור על זמן המשחק צריך חיבור לאינטרנט. ננסה שוב בעוד כמה שניות.');}finally{inFlight=false;}}
+  pill.style.display='none';block(m[0],r.reason==='window'?'זמן המשחק הוא בין '+r.start.slice(0,5)+' ל־'+r.end.slice(0,5)+' לפי שעון ישראל.':m[1]);}}catch(e){if(tryOffline())return;pill.style.display='none';refreshLease();if(lease&&leaseLeft()<=0&&lease.id){block('הזמן השמור נגמר','הדקות שנשמרו למשחק בלי אינטרנט נוצלו. חיבור קצר לאינטרנט יאפשר להמשיך.');}else block('בודקים את החיבור','כדי לשמור על זמן המשחק צריך חיבור לאינטרנט. ננסה שוב בעוד כמה שניות.');}finally{inFlight=false;}}
 block('רגע לפני שמתחילים','בודקים את זמן המשחק המשפחתי…');tick();setInterval(tick,10000);
 let lastMono=performance.now();
 setInterval(()=>{const now=performance.now(),dt=(now-lastMono)/1000;lastMono=now;
