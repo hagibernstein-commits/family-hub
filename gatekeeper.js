@@ -37,7 +37,7 @@ function allowOffline(){document.getElementById('family-control-prelock')?.remov
 function tryOffline(){refreshLease();if(!leaseValid()||clockTampered())return false;if(!windowOk())return false;allowOffline();return true;}
 const pill=document.createElement('button');pill.title='החלפת שחקן';pill.style.cssText='position:fixed;bottom:8px;left:8px;z-index:2147483646;background:#173c39;color:white;border:1px solid #9bb59e;border-radius:18px;padding:8px 12px;font:12px Arial,sans-serif;box-shadow:0 2px 12px #0003';pill.onclick=async()=>{try{await call(false);}catch(e){}block('מי משחקים עכשיו?','בוחרים את הפרופיל כדי לשמור על הזמן של כל אחד.',true);};document.documentElement.appendChild(pill);pill.style.display='none';
 const messages={paused:['זמן להפסקה ביחד','ההורים עצרו כרגע את המשחקים. אפשר לחזור כשיתנו אור ירוק.'],disabled:['המשחק בהפסקה','האפליקציה הזו אינה זמינה עכשיו. אפשר לבחור משהו אחר עם ההורים.'],window:['עכשיו זמן לדברים אחרים','אפשר לשחק בשעות המותרות שקבעו ההורים.'],limit:['כל הכבוד על היום!','זמן המשחק היומי הסתיים. מחר מחכה התחלה חדשה.']};let inFlight=false;
-async function tick(retried){if(inFlight||choosing)return;inFlight=true;try{token=localStorage.getItem('fc_device_v1');if(!token){pill.style.display='none';block('מצרפים את המכשיר לבית','פותחים את המרכז המשפחתי ומבקשים מהורה לצרף את המכשיר באמצעות קוד QR.');return;}if(!kids.length){const r=await call(false,null);kids=r.kids;if(!kids.some(k=>k.id===kid)){kid=null;block('ברוכים הבאים!','בוחרים מי משחקים, והזמן משותף לכל המשחקים.',true);return;}}if(!kid)return;const r=await call(!document.hidden&&!offline&&document.hasFocus());
+async function tick(retried){if(!navigator.onLine){allowOfflineOpen();return;}if(inFlight||choosing)return;inFlight=true;try{token=localStorage.getItem('fc_device_v1');if(!token){pill.style.display='none';block('מצרפים את המכשיר לבית','פותחים את המרכז המשפחתי ומבקשים מהורה לצרף את המכשיר באמצעות קוד QR.');return;}if(!kids.length){const r=await call(false,null);kids=r.kids;if(!kids.some(k=>k.id===kid)){kid=null;block('ברוכים הבאים!','בוחרים מי משחקים, והזמן משותף לכל המשחקים.',true);return;}}if(!kid)return;const r=await call(!document.hidden&&!offline&&document.hasFocus());
  if(r.ok){offline=false;allow(r);syncLease(r).catch(()=>{});}
  else{offline=false;const m=messages[r.reason]||['נחזור בעוד רגע','המשחק לא זמין כרגע.'];
   refreshLease();
@@ -49,14 +49,13 @@ let lastMono=performance.now();
 setInterval(()=>{const now=performance.now(),dt=(now-lastMono)/1000;lastMono=now;
  if(running&&!offline&&Date.now()-lastOk>12000){if(!tryOffline()){allowOfflineOpen();}return;}
  if(offline&&running&&lease){
-  if(clockTampered()){clearLease();pill.style.display='none';block('השעון צריך אימות','כדי להמשיך לשחק בלי אינטרנט השעון במכשיר צריך להיות מדויק. מתחברים לאינטרנט ומנסים שוב.');return;}
+  if(clockTampered()){clearLease();allowOfflineOpen();return;}
   if(!document.hidden&&document.hasFocus()){lease.consumed=Math.min(lease.seconds,lease.consumed+Math.max(0,dt));dirty=true;}
-  if(!windowOk()){pill.style.display='none';block(messages.window[0],'זמן המשחק הוא בין '+lease.start+' ל־'+lease.end+' לפי שעון ישראל.');return;}
-  if(leaseLeft()<=0){pill.style.display='none';block('הזמן השמור נגמר','הדקות שנשמרו למשחק בלי אינטרנט נוצלו. חיבור קצר לאינטרנט יאפשר להמשיך.');saveLeases();return;}
-  pill.textContent=pillText();
+  pill.textContent=(lease.name?lease.name+' · ':'')+'אופליין';
   if(dirty&&Date.now()-lastSave>5000)saveLeases();
  }},1000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(offline&&dirty)saveLeases();call(false).catch(()=>{});}else{block('רגע לפני שממשיכים','בודקים את זמן המשחק…');tick();}});
 window.addEventListener('pagehide',()=>{if(offline&&dirty)saveLeases();fetch(URL+'/rest/v1/rpc/fc_gate',{method:'POST',keepalive:true,headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({token,kid_id:kid,app_id:app,session_id:session,active:false})}).catch(()=>{});});
+window.addEventListener('offline',allowOfflineOpen);
 window.addEventListener('storage',e=>{if(e.key==='fc_kid_v1'){kid=e.newValue;refreshLease();offline=false;tick();}if(e.key==='fc_device_v1'){token=e.newValue;kids=[];refreshLease();tick();}});
 })();
